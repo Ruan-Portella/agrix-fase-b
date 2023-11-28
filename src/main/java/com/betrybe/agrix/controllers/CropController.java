@@ -5,6 +5,7 @@ import com.betrybe.agrix.models.entities.Crop;
 import com.betrybe.agrix.models.entities.Farm;
 import com.betrybe.agrix.services.CropService;
 import com.betrybe.agrix.services.FarmService;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -44,6 +46,8 @@ public class CropController {
     return optionalFarm.map(farm -> {
       Crop crop = cropDto.toCrop();
       crop.setFarm(farm);
+      crop.setPlantedDate(cropDto.getPlantedDate());
+      crop.setHarvestDate(cropDto.getHarvestDate());
       Crop savedCrop = cropService.createCrop(crop);
       CropDto.ToResponse response = CropDto.fromEntity(savedCrop);
       return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -88,5 +92,18 @@ public class CropController {
       CropDto.ToResponse response = CropDto.fromEntity(crop);
       return ResponseEntity.status(HttpStatus.OK).body(response);
     }).orElse(ResponseEntity.notFound().build());
+  }
+
+  /**
+   * Método getCropByHarvestDateBetween.
+   */
+  @GetMapping("/crops/search")
+  public ResponseEntity<?> getCropByHarvestDateBetween(@RequestParam String start, 
+      @RequestParam String end) {
+    LocalDate startDate = LocalDate.parse(start);
+    LocalDate endDate = LocalDate.parse(end);
+    List<Crop> crops = cropService.getCropByHarvestDateBetween(startDate, endDate);
+    List<CropDto.ToResponse> cropDto = crops.stream().map(CropDto::fromEntity).toList();
+    return ResponseEntity.status(HttpStatus.OK).body(cropDto);
   }
 }
