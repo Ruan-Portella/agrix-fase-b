@@ -4,7 +4,6 @@ import com.betrybe.agrix.models.entities.Fertilizer;
 import com.betrybe.agrix.models.repositories.FertilizerRepository;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 /**

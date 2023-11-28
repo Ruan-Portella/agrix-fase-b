@@ -5,9 +5,9 @@ import com.betrybe.agrix.controllers.dto.FertilizerDto;
 import com.betrybe.agrix.models.entities.Crop;
 import com.betrybe.agrix.models.entities.Farm;
 import com.betrybe.agrix.models.entities.Fertilizer;
-import com.betrybe.agrix.services.FertilizerService;
 import com.betrybe.agrix.services.CropService;
 import com.betrybe.agrix.services.FarmService;
+import com.betrybe.agrix.services.FertilizerService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +32,11 @@ public class CropController {
   private FarmService farmService;
   private FertilizerService fertilizerService;
   
-  public CropController(CropService cropService, FarmService farmService, FertilizerService fertilizerService) {
+  /**
+    * Método cropController.
+    */
+  public CropController(CropService cropService, FarmService farmService, 
+      FertilizerService fertilizerService) {
     this.cropService = cropService;
     this.farmService = farmService;
     this.fertilizerService = fertilizerService;
