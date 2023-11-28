@@ -1,8 +1,11 @@
 package com.betrybe.agrix.controllers;
 
 import com.betrybe.agrix.controllers.dto.CropDto;
+import com.betrybe.agrix.controllers.dto.FertilizerDto;
 import com.betrybe.agrix.models.entities.Crop;
 import com.betrybe.agrix.models.entities.Farm;
+import com.betrybe.agrix.models.entities.Fertilizer;
+import com.betrybe.agrix.services.FertilizerService;
 import com.betrybe.agrix.services.CropService;
 import com.betrybe.agrix.services.FarmService;
 import java.time.LocalDate;
@@ -27,10 +30,12 @@ public class CropController {
 
   private CropService cropService;
   private FarmService farmService;
+  private FertilizerService fertilizerService;
   
-  public CropController(CropService cropService, FarmService farmService) {
+  public CropController(CropService cropService, FarmService farmService, FertilizerService fertilizerService) {
     this.cropService = cropService;
     this.farmService = farmService;
+    this.fertilizerService = fertilizerService;
   }
 
   /**
@@ -105,5 +110,55 @@ public class CropController {
     List<Crop> crops = cropService.getCropByHarvestDateBetween(startDate, endDate);
     List<CropDto.ToResponse> cropDto = crops.stream().map(CropDto::fromEntity).toList();
     return ResponseEntity.status(HttpStatus.OK).body(cropDto);
+  }
+
+  /**
+   * Método associateCropWithFertilizer.
+   */
+  @PostMapping("/crops/{cropId}/fertilizers/{fertilizerId}")
+  public ResponseEntity<String> associateCropWithFertilizer(@PathVariable Long cropId,
+      @PathVariable Long fertilizerId) {
+
+    Optional<Fertilizer> fetlizerById = fertilizerService.getFertilizerById(fertilizerId);
+    if (fetlizerById.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Fertilizante não encontrado!");
+    }
+
+    Optional<Crop> cropById = cropService.getCropById(cropId);
+    if (cropById.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Plantação não encontrada!");
+    }
+
+    Crop crop = cropById.get();
+    Fertilizer fertilizer = fetlizerById.get();
+
+    if (crop.getFertilizers().contains(fertilizer)) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Fertilizante não encontrado!");
+    }
+
+    crop.setFertilizer(fertilizer);
+    cropService.createCrop(crop);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+      .body("Fertilizante e plantação associados com sucesso!");
+  }
+
+  /**
+   * Método getFertilizersByCropId.
+   */
+  @GetMapping("/crops/{cropId}/fertilizers")
+  public ResponseEntity<?> getFertilizersByCropId(@PathVariable Long cropId) {
+    Optional<Crop> cropById = cropService.getCropById(cropId);
+    if (cropById.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Plantação não encontrada!");
+    }
+
+    Crop crop = cropById.get();
+    List<Fertilizer> allFertilizer = crop.getFertilizers();
+
+    List<FertilizerDto.ToResponse> fertilizerToDto = allFertilizer.stream()
+        .map(FertilizerDto::fromEntity).toList();
+
+    return ResponseEntity.status(HttpStatus.OK).body(fertilizerToDto);
   }
 }
